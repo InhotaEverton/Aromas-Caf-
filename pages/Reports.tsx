@@ -20,8 +20,7 @@ import {
   CartesianGrid, 
   Tooltip, 
   ResponsiveContainer, 
-  Cell,
-  Legend
+  Cell
 } from 'recharts';
 
 type TimeRange = 'today' | '7days' | '30days' | 'all';
