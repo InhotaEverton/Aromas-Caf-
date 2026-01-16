@@ -149,12 +149,12 @@ const Reports: React.FC = () => {
           <select 
             value={timeRange} 
             onChange={(e) => setTimeRange(e.target.value as TimeRange)}
-            className="bg-transparent text-white border-none outline-none text-sm font-medium pr-8 py-2 cursor-pointer"
+            className="bg-transparent text-white border-none outline-none text-sm font-medium pr-8 py-2 cursor-pointer focus:ring-0"
           >
-            <option value="today">Hoje</option>
-            <option value="7days">Últimos 7 dias</option>
-            <option value="30days">Últimos 30 dias</option>
-            <option value="all">Todo o período</option>
+            <option className="bg-gray-900 text-white" value="today">Hoje</option>
+            <option className="bg-gray-900 text-white" value="7days">Últimos 7 dias</option>
+            <option className="bg-gray-900 text-white" value="30days">Últimos 30 dias</option>
+            <option className="bg-gray-900 text-white" value="all">Todo o período</option>
           </select>
         </div>
       </div>

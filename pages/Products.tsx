@@ -175,7 +175,7 @@ const Products: React.FC = () => {
                     className="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-white focus:ring-1 focus:ring-coffee-500 outline-none"
                   >
                     {CATEGORIES.filter(c => c !== 'Todos').map(c => (
-                      <option key={c} value={c}>{c}</option>
+                      <option key={c} value={c} className="bg-gray-900 text-white">{c}</option>
                     ))}
                   </select>
                 </div>

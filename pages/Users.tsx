@@ -89,8 +89,8 @@ const Users: React.FC = () => {
                             <div>
                                 <label className="block text-sm text-gray-400 mb-1">Função</label>
                                 <select className="w-full bg-dark-bg border border-dark-border rounded p-2 text-white" value={formData.role} onChange={e => setFormData({...formData, role: e.target.value as UserRole})}>
-                                    <option value={UserRole.OPERATOR}>Operador (Vendas e Caixa)</option>
-                                    <option value={UserRole.ADMIN}>Administrador (Acesso Total)</option>
+                                    <option value={UserRole.OPERATOR} className="bg-gray-900 text-white">Operador (Vendas e Caixa)</option>
+                                    <option value={UserRole.ADMIN} className="bg-gray-900 text-white">Administrador (Acesso Total)</option>
                                 </select>
                             </div>
                             <div className="md:col-span-2 flex justify-end gap-3 mt-2">
