@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { User, CashRegisterSession, PaymentMethodType } from '../types';
-import { getCurrentSession, saveCurrentSession } from '../services/db';
+import { getCurrentSession, saveCurrentSession, generateUUID } from '../services/db';
 import { DollarSign, Lock, Unlock, AlertTriangle, Save, History } from 'lucide-react';
 
 interface CashControlProps {
@@ -30,7 +30,7 @@ const CashControl: React.FC<CashControlProps> = ({ currentUser }) => {
     if (isNaN(val) || val < 0) return;
 
     const newSession: CashRegisterSession = {
-      id: crypto.randomUUID(),
+      id: generateUUID(), // Replaced crypto.randomUUID
       openedAt: Date.now(),
       openingBalance: val,
       operatorId: currentUser.id,

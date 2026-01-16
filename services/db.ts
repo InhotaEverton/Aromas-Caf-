@@ -2,7 +2,7 @@ import { User, Product, Customer, CashRegisterSession, Sale, CartItem, Payment }
 import { supabase } from './supabase';
 
 // Helper to generate UUIDs compatible with all environments (replaces crypto.randomUUID which might fail in some CI/Build envs)
-const generateUUID = () => {
+export const generateUUID = () => {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
     var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
     return v.toString(16);

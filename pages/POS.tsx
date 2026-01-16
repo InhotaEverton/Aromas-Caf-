@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Product, CartItem, Customer, Sale, User, PaymentMethodType, Payment, CashRegisterSession } from '../types';
-import { getProducts, getCurrentSession, saveCurrentSession, getCustomers, saveSale } from '../services/db';
+import { getProducts, getCurrentSession, saveCurrentSession, getCustomers, saveSale, generateUUID } from '../services/db';
 import { CATEGORIES } from '../constants';
 import { Search, Plus, Minus, Trash2, UserPlus, X, CreditCard, Banknote, QrCode, CheckCircle, Coffee } from 'lucide-react';
 
@@ -131,7 +131,7 @@ const POS: React.FC<POSProps> = ({ currentUser }) => {
     const change = totalPaid - cartTotal;
     
     const newSale: Sale = {
-      id: crypto.randomUUID(), // Generate UUID for DB
+      id: generateUUID(), // Replaced crypto.randomUUID
       timestamp: Date.now(),
       items: cart,
       total: cartTotal,
