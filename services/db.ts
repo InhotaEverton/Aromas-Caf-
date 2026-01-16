@@ -1,14 +1,15 @@
 import { User, Product, Customer, CashRegisterSession, Sale, CartItem, Payment } from '../types';
 import { supabase } from './supabase';
 
-// Helper to generate UUIDs on client side for optimistic UI or explicit ID handling
+// Helper to generate UUIDs compatible with all environments (replaces crypto.randomUUID which might fail in some CI/Build envs)
 const generateUUID = () => {
-  return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
 };
 
 export const initDB = async () => {
-  // Supabase is initialized in supabase.ts
-  // We can check connectivity here if needed
   console.log("DB Service Initialized");
 };
 
@@ -24,19 +25,12 @@ export const getProducts = async (): Promise<Product[]> => {
 };
 
 export const saveProduct = async (product: Product) => {
-  // If new product without ID, generate one or let DB handle it.
-  // Our logic uses the ID for updates, so we ensure it exists.
   const productToSave = { ...product };
+  // Ensure ID exists
   if (!productToSave.id || productToSave.id.length < 10) { 
-     // LocalStorage used Date.now(), Supabase uses UUID. 
-     // If migrating, we might regenerate or keep simple IDs if column type allows.
-     // The SQL script uses TEXT for ID, so we can use UUIDs.
-     if(!productToSave.id) productToSave.id = generateUUID();
+     productToSave.id = generateUUID();
   }
 
-  // Remove ID if it's empty string to let default gen_random_uuid work? 
-  // No, we prefer explicit ID handling for React keys.
-  
   const { error } = await supabase.from('products').upsert(productToSave);
   if (error) console.error('Error saving product:', error);
 };
@@ -91,9 +85,8 @@ export const saveCustomer = async (customer: Customer) => {
 
 // --- SESSIONS & SALES ---
 
-// Helper to construct a full Session object from relational data
-const mapSessionData = (sessionData: any, salesData: any[]): CashRegisterSession => {
-    if (!sessionData) return null as any;
+const mapSessionData = (sessionData: any, salesData: any[]): CashRegisterSession | null => {
+    if (!sessionData) return null;
 
     const sales: Sale[] = salesData.map((s: any) => ({
         id: s.id,
@@ -103,11 +96,11 @@ const mapSessionData = (sessionData: any, salesData: any[]): CashRegisterSession
         operatorId: s.operator_id,
         customerId: s.customer_id,
         items: s.sale_items ? s.sale_items.map((i: any) => ({
-            id: i.product_id, // Map back to product ID for UI logic
+            id: i.product_id,
             name: i.name,
             price: i.price,
             quantity: i.quantity,
-            category: '', // Not strictly needed for history view
+            category: '',
             description: '',
             active: true
         })) : [],
@@ -154,14 +147,15 @@ export const getCurrentSession = async (): Promise<CashRegisterSession | null> =
 
   if (salesError) {
       console.error("Error fetching sales for session", salesError);
-      return mapSessionData(sessionData, []);
+      // If we can't get sales, return session with empty sales to avoid UI crash
+      const session = mapSessionData(sessionData, []);
+      return session;
   }
 
   return mapSessionData(sessionData, salesData);
 };
 
 export const saveCurrentSession = async (session: CashRegisterSession) => {
-  // For 'Opening' or 'Closing' the register (Updating the session record itself)
   const sessionRecord = {
       id: session.id,
       opened_at: session.openedAt,
@@ -180,8 +174,6 @@ export const saveCurrentSession = async (session: CashRegisterSession) => {
 };
 
 export const saveSale = async (sale: Sale, sessionId: string) => {
-    // Transaction-like insert using Supabase
-    
     // 1. Insert Sale Header
     const saleRecord = {
         id: sale.id,
@@ -221,17 +213,12 @@ export const saveSale = async (sale: Sale, sessionId: string) => {
 };
 
 export const getSessionHistory = async (): Promise<CashRegisterSession[]> => {
-    // Fetch all closed sessions
     const { data: sessions, error } = await supabase
         .from('cash_sessions')
         .select('*')
         .order('opened_at', { ascending: false });
 
     if(error) return [];
-
-    // For reports, we often need the sales data too. 
-    // This might be heavy for a large history list, but for this app scale it's fine.
-    // We'll fetch all sales linked to these sessions.
     
     const { data: allSales } = await supabase
         .from('sales')
@@ -245,5 +232,7 @@ export const getSessionHistory = async (): Promise<CashRegisterSession[]> => {
         });
     }
 
-    return sessions.map((s: any) => mapSessionData(s, salesBySession[s.id] || []));
+    // Filter out nulls safely
+    const result = sessions.map((s: any) => mapSessionData(s, salesBySession[s.id] || []));
+    return result.filter((s): s is CashRegisterSession => s !== null);
 };
